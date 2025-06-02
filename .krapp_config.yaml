@@ -1,0 +1,3 @@
+base_dir: "./notes"
+daily_note_dir: "daily"
+inbox_dir: "inbox"
