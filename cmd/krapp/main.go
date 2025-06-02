@@ -7,9 +7,16 @@ import (
 	"time"
 
 	"github.com/ishida722/krapp-go/config"
+	"github.com/ishida722/krapp-go/usecase"
 
 	"github.com/spf13/cobra"
 )
+
+type configAdapter struct{ *config.Config }
+
+func (c *configAdapter) GetBaseDir() string      { return c.BaseDir }
+func (c *configAdapter) GetDailyNoteDir() string { return c.DailyNoteDir }
+func (c *configAdapter) GetInboxDir() string     { return c.Inbox }
 
 func main() {
 	// 1. カレントディレクトリの設定ファイルを優先
@@ -25,6 +32,9 @@ func main() {
 		fmt.Println("設定ファイルの読み込みに失敗しました:", err)
 		os.Exit(1)
 	}
+
+	adapter := &configAdapter{cfg}
+
 	var rootCmd = &cobra.Command{
 		Use:   "krapp",
 		Short: "My awesome CLI tool",
@@ -53,22 +63,10 @@ func main() {
 		Short: "Create today's daily note and print its path",
 		Run: func(cmd *cobra.Command, args []string) {
 			now := time.Now()
-			year := now.Format("2006")
-			month := now.Format("01")
-			date := now.Format("2006-01-02")
-			dir := filepath.Join(cfg.BaseDir, cfg.DailyNoteDir, year, month)
-			if err := os.MkdirAll(dir, 0755); err != nil {
-				fmt.Println("ディレクトリ作成に失敗:", err)
+			filePath, err := usecase.CreateDailyNote(adapter, now)
+			if err != nil {
+				fmt.Println(err)
 				os.Exit(1)
-			}
-			filePath := filepath.Join(dir, date+".md")
-			if _, err := os.Stat(filePath); os.IsNotExist(err) {
-				f, err := os.Create(filePath)
-				if err != nil {
-					fmt.Println("ファイル作成に失敗:", err)
-					os.Exit(1)
-				}
-				f.Close()
 			}
 			fmt.Println(filePath)
 		},
@@ -82,21 +80,10 @@ func main() {
 		Run: func(cmd *cobra.Command, args []string) {
 			title := args[0]
 			now := time.Now()
-			date := now.Format("2006-01-02")
-			filename := fmt.Sprintf("%s-%s.md", date, title)
-			dir := filepath.Join(cfg.BaseDir, cfg.Inbox)
-			if err := os.MkdirAll(dir, 0755); err != nil {
-				fmt.Println("Inboxディレクトリ作成に失敗:", err)
+			filePath, err := usecase.CreateInboxNote(adapter, now, title)
+			if err != nil {
+				fmt.Println(err)
 				os.Exit(1)
-			}
-			filePath := filepath.Join(dir, filename)
-			if _, err := os.Stat(filePath); os.IsNotExist(err) {
-				f, err := os.Create(filePath)
-				if err != nil {
-					fmt.Println("Inboxノート作成に失敗:", err)
-					os.Exit(1)
-				}
-				f.Close()
 			}
 			fmt.Println(filePath)
 		},
