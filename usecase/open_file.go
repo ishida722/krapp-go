@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 )
 
@@ -16,7 +17,10 @@ func OpenFile(editorCommand, filePath string) error {
 	}
 
 	cmd := exec.Command(editorCommand, filePath)
-	if err := cmd.Start(); err != nil {
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("ファイルを開く際にエラー: %w", err)
 	}
 	return nil
