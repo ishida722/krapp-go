@@ -99,7 +99,7 @@ func main() {
 		Use:   "sync",
 		Short: "Sync notes",
 		Run: func(cmd *cobra.Command, args []string) {
-			usecase.SyncGit()
+			usecase.SyncGit(cfg.BaseDir)
 		},
 	}
 	rootCmd.AddCommand(syncCmd)
