@@ -51,8 +51,9 @@ func main() {
 	rootCmd.AddCommand(printConfigCmd)
 
 	var createDailyCmd = &cobra.Command{
-		Use:   "create-daily",
-		Short: "Create today's daily note and print its path",
+		Use:     "create-daily",
+		Short:   "Create today's daily note and print its path",
+		Aliases: []string{"cd"},
 		Run: func(cmd *cobra.Command, args []string) {
 			now := time.Now()
 			filePath, err := usecase.CreateDailyNote(adapter, now)
@@ -71,9 +72,10 @@ func main() {
 	rootCmd.AddCommand(createDailyCmd)
 
 	var createInboxCmd = &cobra.Command{
-		Use:   "create-inbox [title]",
-		Short: "Create a new inbox note with the given title and print its path",
-		Args:  cobra.ExactArgs(1),
+		Use:     "create-inbox [title]",
+		Short:   "Create a new inbox note with the given title and print its path",
+		Aliases: []string{"ci"},
+		Args:    cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			title := args[0]
 			now := time.Now()
