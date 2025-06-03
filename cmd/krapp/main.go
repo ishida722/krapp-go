@@ -28,8 +28,9 @@ func main() {
 	adapter := &configAdapter{&cfg}
 
 	var rootCmd = &cobra.Command{
-		Use:   "krapp",
-		Short: "My awesome CLI tool",
+		Use:     "krapp",
+		Version: "0.1.0",
+		Short:   "My awesome CLI tool",
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Printf("BaseDir: %s\nDailyNoteDir: %s\n", cfg.BaseDir, cfg.DailyNoteDir)
 		},
