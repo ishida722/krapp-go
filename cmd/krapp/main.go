@@ -61,8 +61,13 @@ func main() {
 				os.Exit(1)
 			}
 			fmt.Println(filePath)
+			edit, _ := cmd.Flags().GetBool("edit")
+			if edit {
+				usecase.OpenFile(cfg.Editor, filePath)
+			}
 		},
 	}
+	createDailyCmd.Flags().BoolP("edit", "e", false, "Open the note in editor after creation")
 	rootCmd.AddCommand(createDailyCmd)
 
 	var createInboxCmd = &cobra.Command{
@@ -78,8 +83,13 @@ func main() {
 				os.Exit(1)
 			}
 			fmt.Println(filePath)
+			edit, _ := cmd.Flags().GetBool("edit")
+			if edit {
+				usecase.OpenFile(cfg.Editor, filePath)
+			}
 		},
 	}
+	createInboxCmd.Flags().BoolP("edit", "e", false, "Open the note in editor after creation")
 	rootCmd.AddCommand(createInboxCmd)
 
 	rootCmd.Execute()
