@@ -1,19 +1,11 @@
 package main
 
 import (
-	"os"
 	"os/exec"
-	"path/filepath"
 	"testing"
 )
 
-func setup(t *testing.T) {
-	notesDir := filepath.Join("..", "..", "notes")
-	_ = os.RemoveAll(notesDir)
-}
-
 func TestPrintConfig(t *testing.T) {
-	setup(t)
 	cmd := exec.Command("go", "run", "main.go", "print-config")
 	cmd.Dir = "."
 	out, err := cmd.CombinedOutput()
@@ -26,7 +18,6 @@ func TestPrintConfig(t *testing.T) {
 }
 
 func TestCreateDaily(t *testing.T) {
-	setup(t)
 	cmd := exec.Command("go", "run", "main.go", "create-daily")
 	cmd.Dir = "."
 	out, err := cmd.CombinedOutput()
@@ -39,7 +30,6 @@ func TestCreateDaily(t *testing.T) {
 }
 
 func TestCreateInbox(t *testing.T) {
-	setup(t)
 	cmd := exec.Command("go", "run", "main.go", "create-inbox", "test")
 	cmd.Dir = "."
 	out, err := cmd.CombinedOutput()

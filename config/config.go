@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"path/filepath"
 
 	"dario.cat/mergo"
 	"gopkg.in/yaml.v3"
@@ -10,8 +11,8 @@ import (
 type Config struct {
 	BaseDir      string `yaml:"base_dir"`
 	DailyNoteDir string `yaml:"daily_note_dir"`
-	Inbox        string `yaml:"inbox_dir"` // オプションのフィールド
-	Editor       string `yaml:"editor"`    // オプションのフィールド
+	Inbox        string `yaml:"inbox_dir"`
+	Editor       string `yaml:"editor"`
 }
 
 var defaultConfig = Config{
@@ -21,11 +22,68 @@ var defaultConfig = Config{
 	Editor:       "vim",   // デフォルトのエディタ
 }
 
-func LoadConfig(path string) (Config, error) {
+type ConfigPaths struct {
+	Global string // グローバル設定ファイルのパス
+	Local  string // ローカル設定ファイルのパス
+}
+
+var configPaths = ConfigPaths{
+	Global: filepath.Join(os.Getenv("HOME"), ".krapp_config.yaml"),
+	Local:  ".krapp_config.yaml",
+}
+
+func GetConfigPaths() (ConfigPaths, error) {
+	return configPaths, nil
+}
+
+func SetConfigPaths(paths ConfigPaths) {
+	configPaths = paths
+}
+
+func makeHomeConfig() error {
+	// ファイルの情報を取得する,存在しない場合はエラーを返す
+	_, err := os.Stat(configPaths.Global)
+	// エラーが返ってこないので設定ファイルが存在する
+	if err == nil {
+		// ホームディレクトリに設定ファイルが存在する場合は何もしない
+		return nil
+	}
+	// ファイルが存在するけど､エラーが発生した場合はそのエラーを返す
+	if !os.IsNotExist(err) {
+		return err // 存在しない以外のエラー
+	}
+	// ホームディレクトリに設定ファイルが存在しない場合はデフォルト設定を保存
+	return saveConfig(configPaths.Global, GetDefaultConfig())
+}
+
+func LoadConfig() (Config, error) {
+	// 設定ファイルの存在確認と作成
+	err := makeHomeConfig()
+	if err != nil {
+		// 設定ファイルの作成に失敗した場合はエラーを返す
+		return Config{}, err
+	}
+	// グローバル設定の読み込み
+	globalConfig, err := loadConfig(configPaths.Global)
+	if err != nil {
+		return Config{}, err
+	}
+	// ローカル設定の読み込み
+	localConfig, err := loadConfig(configPaths.Local)
+	if err != nil {
+		// ローカル設定ファイルが存在しない場合はグローバル設定をそのまま返す
+		return globalConfig, nil
+	}
+	// グローバル設定とローカル設定をマージ
+	mergedConfig := MergeConfig(globalConfig, localConfig)
+	return mergedConfig, nil
+}
+
+func loadConfig(path string) (Config, error) {
 	f, err := os.Open(path)
 	if err != nil {
-		// ファイルがなければデフォルト値を返す
-		return defaultConfig, nil
+		// ファイルがなければnull値を返す
+		return Config{}, err
 	}
 	defer f.Close()
 
@@ -33,12 +91,12 @@ func LoadConfig(path string) (Config, error) {
 	// yamlファイルをデコード
 	if err = yaml.NewDecoder(f).Decode(&cfg); err != nil {
 		// デコードに失敗した場合はデフォルト値を返す
-		return defaultConfig, err
+		return Config{}, err
 	}
 	return cfg, nil
 }
 
-func SaveConfig(path string, cfg Config) error {
+func saveConfig(path string, cfg Config) error {
 	f, err := os.Create(path)
 	if err != nil {
 		return err
@@ -52,8 +110,16 @@ func MarshalYAML(cfg *Config) ([]byte, error) {
 	return yaml.Marshal(cfg)
 }
 
-func MergeConfig(local, home Config) Config {
+func GetDefaultConfig() Config {
+	// デフォルト設定を返す
+	return defaultConfig
+}
+
+func MergeConfig(global, local Config) Config {
 	// localの非ゼロ値でhomeを上書き
-	_ = mergo.Merge(home, local, mergo.WithOverride)
-	return home
+	if err := mergo.Merge(&local, global); err != nil {
+		// マージに失敗した場合はグローバル設定をそのまま返す
+		return global
+	}
+	return local
 }

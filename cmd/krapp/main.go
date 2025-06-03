@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/ishida722/krapp-go/config"
@@ -19,21 +18,14 @@ func (c *configAdapter) GetDailyNoteDir() string { return c.DailyNoteDir }
 func (c *configAdapter) GetInboxDir() string     { return c.Inbox }
 
 func main() {
-	// 1. カレントディレクトリの設定ファイルを優先
-	localConfigPath := ".krapp_config.yaml"
-	homeConfigPath := filepath.Join(os.Getenv("HOME"), ".krapp_config.yaml")
-	configPath := homeConfigPath
-	if _, err := os.Stat(localConfigPath); err == nil {
-		configPath = localConfigPath
-	}
-
-	cfg, err := config.LoadConfig(configPath)
+	// コンフィグのロード
+	cfg, err := config.LoadConfig()
 	if err != nil {
 		fmt.Println("設定ファイルの読み込みに失敗しました:", err)
 		os.Exit(1)
 	}
 
-	adapter := &configAdapter{cfg}
+	adapter := &configAdapter{&cfg}
 
 	var rootCmd = &cobra.Command{
 		Use:   "krapp",
@@ -48,7 +40,7 @@ func main() {
 		Short: "Print current config as YAML",
 		Run: func(cmd *cobra.Command, args []string) {
 			// 設定内容をYAMLで出力
-			yamlBytes, err := config.MarshalYAML(cfg)
+			yamlBytes, err := config.MarshalYAML(&cfg)
 			if err != nil {
 				fmt.Println("設定のYAML変換に失敗:", err)
 				os.Exit(1)
