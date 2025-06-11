@@ -28,9 +28,9 @@ func CreateDailyNote(cfg Config, now time.Time) (string, error) {
 			return "", fmt.Errorf("ファイル作成に失敗: %w", err)
 		}
 		f.Close()
-	}
-	if err := addCreatedForNewFile(filePath); err != nil {
-		return "", fmt.Errorf("frontmatterの追加に失敗: %w", err)
+		if err := addCreatedForNewFile(filePath); err != nil {
+			return "", fmt.Errorf("frontmatterの追加に失敗: %w", err)
+		}
 	}
 	return filePath, nil
 }

@@ -27,9 +27,9 @@ func CreateInboxNote(cfg InboxConfig, now time.Time, title string) (string, erro
 			return "", fmt.Errorf("inboxノート作成に失敗: %w", err)
 		}
 		f.Close()
-	}
-	if err := addCreatedForNewFile(filePath); err != nil {
-		return "", fmt.Errorf("frontmatterの追加に失敗: %w", err)
+		if err := addCreatedForNewFile(filePath); err != nil {
+			return "", fmt.Errorf("frontmatterの追加に失敗: %w", err)
+		}
 	}
 	return filePath, nil
 }

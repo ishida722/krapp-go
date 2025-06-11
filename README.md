@@ -12,7 +12,7 @@ krappは、日々のメモやインボックスノートを素早く作成・管
 ## インストール
 
 ```bash
-go install github.com/ishida722/krapp-go/cmd/krapp@latest
+go install github.com/ishida722/krapp-go/cmd/krapp@HEAD
 ```
 
 ## 使い方
