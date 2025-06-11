@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/ishida722/krapp-go/usecase/frontmatter"
 )
 
 type InboxConfig interface {
@@ -27,6 +29,13 @@ func CreateInboxNote(cfg InboxConfig, now time.Time, title string) (string, erro
 			return "", fmt.Errorf("inboxノート作成に失敗: %w", err)
 		}
 		f.Close()
+	}
+	content, err := frontmatter.AddCreated("")
+	if err != nil {
+		return "", fmt.Errorf("frontmatterの追加に失敗: %w", err)
+	}
+	if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
+		return "", fmt.Errorf("ファイル書き込みに失敗: %w", err)
 	}
 	return filePath, nil
 }
