@@ -5,8 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"time"
-
-	"github.com/ishida722/krapp-go/usecase/frontmatter"
 )
 
 type Config interface {
@@ -31,12 +29,8 @@ func CreateDailyNote(cfg Config, now time.Time) (string, error) {
 		}
 		f.Close()
 	}
-	content, err := frontmatter.AddCreated("")
-	if err != nil {
+	if err := addCreatedForNewFile(filePath); err != nil {
 		return "", fmt.Errorf("frontmatterの追加に失敗: %w", err)
-	}
-	if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
-		return "", fmt.Errorf("ファイル書き込みに失敗: %w", err)
 	}
 	return filePath, nil
 }
