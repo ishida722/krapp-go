@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/ishida722/krapp-go/config"
@@ -103,6 +104,23 @@ func main() {
 		},
 	}
 	rootCmd.AddCommand(syncCmd)
+
+	var importNotes = &cobra.Command{
+		Use:     "import-notes [directory]",
+		Short:   "import notes from a directory",
+		Aliases: []string{"in"},
+		Args:    cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			directory := args[0]
+			if err := usecase.ImportNotes(directory, filepath.Join(cfg.BaseDir, cfg.Inbox)); err != nil {
+				fmt.Println("ノートのインポートに失敗しました:", err)
+				os.Exit(1)
+			} else {
+				fmt.Println("ノートのインポートが完了しました")
+			}
+		},
+	}
+	rootCmd.AddCommand(importNotes)
 
 	rootCmd.Execute()
 }
