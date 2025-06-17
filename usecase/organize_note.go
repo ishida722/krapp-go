@@ -26,6 +26,10 @@ func OrganizeNotesByCreated(notes []models.Note, baseDirectory string) {
 		}
 		path := filepath.Join(created.Format("2006"), created.Format("01"))
 		fullPath := filepath.Join(baseDirectory, path)
+		err = os.MkdirAll(fullPath, 0755)
+		if err != nil {
+			continue // Skip notes if the directory cannot be created
+		}
 		err = note.MoveFile(fullPath)
 		if err != nil {
 			continue // Skip notes that cannot be moved
