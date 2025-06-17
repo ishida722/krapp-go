@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/ishida722/krapp-go/models"
 )
 
 type Config interface {
@@ -21,16 +23,14 @@ func CreateDailyNote(cfg Config, now time.Time) (string, error) {
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return "", fmt.Errorf("ディレクトリ作成に失敗: %w", err)
 	}
-	filePath := filepath.Join(dir, date+".md")
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		f, err := os.Create(filePath)
-		if err != nil {
-			return "", fmt.Errorf("ファイル作成に失敗: %w", err)
-		}
-		f.Close()
-		if err := addCreatedForNewFile(filePath); err != nil {
-			return "", fmt.Errorf("frontmatterの追加に失敗: %w", err)
-		}
+	note, err := models.CreateNewNote(models.NewNote{
+		Content:   "",
+		FilePath:  filepath.Join(dir, date+".md"),
+		WriteFile: true,
+		Now:       true,
+	})
+	if err != nil {
+		return "", fmt.Errorf("日記の保存に失敗: %w", err)
 	}
-	return filePath, nil
+	return note.FilePath, nil
 }

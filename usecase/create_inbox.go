@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/ishida722/krapp-go/models"
 )
 
 type InboxConfig interface {
@@ -20,16 +22,14 @@ func CreateInboxNote(cfg InboxConfig, now time.Time, title string) (string, erro
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return "", fmt.Errorf("inboxディレクトリ作成に失敗: %w", err)
 	}
-	filePath := filepath.Join(dir, filename)
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		f, err := os.Create(filePath)
-		if err != nil {
-			return "", fmt.Errorf("inboxノート作成に失敗: %w", err)
-		}
-		f.Close()
-		if err := addCreatedForNewFile(filePath); err != nil {
-			return "", fmt.Errorf("frontmatterの追加に失敗: %w", err)
-		}
+	note, err := models.CreateNewNote(models.NewNote{
+		Content:   "",
+		FilePath:  filepath.Join(dir, filename),
+		WriteFile: true,
+		Now:       true,
+	})
+	if err != nil {
+		return "", fmt.Errorf("日記の保存に失敗: %w", err)
 	}
-	return filePath, nil
+	return note.FilePath, nil
 }

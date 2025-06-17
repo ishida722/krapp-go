@@ -5,12 +5,12 @@ import (
 )
 
 type NoteLabeler struct {
-	Notes []*models.Note
-	Current *models.Note
+	Notes        []*models.Note
+	Current      *models.Note
 	CurrentIndex int
 }
 
-func (self *NoteLabeler) Next error{
+func (self *NoteLabeler) Next() error {
 	self.Current = self.Notes[0]
 	return nil
 }

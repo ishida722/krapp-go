@@ -16,6 +16,32 @@ type Note struct {
 	FilePath    string // ファイルパス
 }
 
+type NewNote struct {
+	Content   string
+	FilePath  string
+	WriteFile bool
+	Now       bool
+}
+
+func CreateNewNote(newNote NewNote) (*Note, error) {
+	fm := FrontMatter{}
+	if newNote.Now {
+		fm.SetCreatedNow()
+	}
+	note := &Note{
+		FrontMatter: fm,
+		Content:     strings.TrimSpace(newNote.Content),
+		FilePath:    newNote.FilePath,
+	}
+	if newNote.WriteFile {
+		if note.FilePath == "" {
+			return note, errors.New("note file path is empty")
+		}
+		note.SaveToFile()
+	}
+	return note, nil
+}
+
 func (note Note) ToString() (string, error) {
 	if note.FrontMatter == nil {
 		return note.Content, nil

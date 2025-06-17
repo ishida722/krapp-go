@@ -17,6 +17,19 @@ func (fm FrontMatter) ToYAML() (string, error) {
 	return "---\n" + string(bytes) + "---\n", nil
 }
 
+func (fm FrontMatter) SetCreatedNow() error {
+	fm.SetCreated(time.Now())
+	return nil
+}
+
+func (fm FrontMatter) SetCreated(t time.Time) error {
+	if t.IsZero() {
+		return fmt.Errorf("invalid time: zero value")
+	}
+	fm["created"] = t.Format("2006-01-02")
+	return nil
+}
+
 func (fm FrontMatter) Created() (time.Time, error) {
 	createdValue, ok := fm["created"]
 	if !ok {

@@ -15,6 +15,12 @@ krappは、日々のメモやインボックスノートを素早く作成・管
 go install github.com/ishida722/krapp-go/cmd/krapp@HEAD
 ```
 
+## テストの実施
+
+```sh
+go test ./...
+```
+
 ## 使い方
 
 ### 設定ファイル
