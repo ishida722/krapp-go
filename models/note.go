@@ -118,7 +118,7 @@ func (note *Note) MoveFile(newDir string) error {
 	if note.FilePath == "" {
 		return errors.New("note file path is empty")
 	}
-	newPath := path.Join(newDir, path.Base(note.FilePath))
+	newPath := filepath.Join(newDir, filepath.Base(note.FilePath))
 
 	err := os.Rename(note.FilePath, newPath)
 	if err != nil {
