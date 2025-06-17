@@ -30,7 +30,7 @@ func main() {
 
 	var rootCmd = &cobra.Command{
 		Use:     "krapp",
-		Version: "0.2.0",
+		Version: "0.2.1",
 		Short:   "My awesome CLI tool",
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Printf("BaseDir: %s\nDailyNoteDir: %s\n", cfg.BaseDir, cfg.DailyNoteDir)
