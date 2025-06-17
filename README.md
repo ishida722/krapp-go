@@ -1,4 +1,4 @@
-[![Tests](https://github.com/ishida722/krapp-go/actions/workflows/go.yml/badge.svg?branch=main)](https://github.com/ishida722/krapp-go/actions/workflows/go.yml)
+[![Tests](https://github.com/ishida722/krapp-go/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/ishida722/krapp-go/actions/workflows/test.yml)
 [![Go Version](https://img.shields.io/github/go-mod/go-version/ishida722/krapp-go?style=flat-square)](https://github.com/ishida722/krapp-go/blob/main/go.mod)
 
 
