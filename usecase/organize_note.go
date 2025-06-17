@@ -11,6 +11,14 @@ type LabelDirectoryMap map[string]string
 
 func OrganizeNotesByCreated(notes []models.Note, baseDirectory string) {
 	// Sort notes by CreatedAt in descending order
+	sort.Slice(notes, func(i, j int) bool {
+		createdI, errI := notes[i].FrontMatter.Created()
+		createdJ, errJ := notes[j].FrontMatter.Created()
+		if errI != nil || errJ != nil {
+			return false // Treat invalid dates as equal
+		}
+		return createdI.After(createdJ) // Descending order
+	})
 	for _, note := range notes {
 		created, err := note.FrontMatter.Created()
 		if err != nil {
