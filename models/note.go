@@ -37,7 +37,9 @@ func CreateNewNote(newNote NewNote) (*Note, error) {
 		if note.FilePath == "" {
 			return note, errors.New("note file path is empty")
 		}
-		note.SaveToFile()
+		if err := note.SaveToFile(); err != nil {
+			return note, fmt.Errorf("failed to save note to file: %w", err)
+		}
 	}
 	return note, nil
 }
