@@ -1,5 +1,8 @@
 # krapp
 
+[![Tests](https://github.com/ishida722/krapp-go/actions/workflows/go.yml/badge.svg?branch=main)](https://github.com/ishida722/krapp-go/actions/workflows/go.yml)
+
+
 krappは、日々のメモやインボックスノートを素早く作成・管理できるGo製CLIツールです。
 
 ## 特徴
