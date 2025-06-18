@@ -18,6 +18,17 @@ func (c *configAdapter) GetBaseDir() string      { return c.BaseDir }
 func (c *configAdapter) GetDailyNoteDir() string { return c.DailyNoteDir }
 func (c *configAdapter) GetInboxDir() string     { return c.Inbox }
 
+func OpenFile(cmd *cobra.Command, config config.Config, filePath string) error {
+	if config.WithAlwaysOpenEditor || cmd.Flags().Changed("edit") {
+		err := usecase.OpenFile(config.Editor, filePath)
+		if err != nil {
+			return fmt.Errorf("ファイルを開く際にエラーが発生しました:%s", err)
+		}
+		return nil
+	}
+	return nil
+}
+
 func main() {
 	// コンフィグのロード
 	cfg, err := config.LoadConfig()
@@ -38,7 +49,7 @@ func main() {
 	}
 
 	var printConfigCmd = &cobra.Command{
-		Use:   "print-config",
+		Use:   "config",
 		Short: "Print current config as YAML",
 		Run: func(cmd *cobra.Command, args []string) {
 			// 設定内容をYAMLで出力
@@ -64,9 +75,10 @@ func main() {
 				os.Exit(1)
 			}
 			fmt.Println(filePath)
-			edit, _ := cmd.Flags().GetBool("edit")
-			if edit {
-				usecase.OpenFile(cfg.Editor, filePath)
+			err = OpenFile(cmd, cfg, filePath)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
 			}
 		},
 	}
@@ -87,9 +99,10 @@ func main() {
 				os.Exit(1)
 			}
 			fmt.Println(filePath)
-			edit, _ := cmd.Flags().GetBool("edit")
-			if edit {
-				usecase.OpenFile(cfg.Editor, filePath)
+			err = OpenFile(cmd, cfg, filePath)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
 			}
 		},
 	}

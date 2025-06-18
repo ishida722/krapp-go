@@ -9,17 +9,19 @@ import (
 )
 
 type Config struct {
-	BaseDir      string `yaml:"base_dir"`
-	DailyNoteDir string `yaml:"daily_note_dir"`
-	Inbox        string `yaml:"inbox_dir"`
-	Editor       string `yaml:"editor"`
+	BaseDir              string `yaml:"base_dir"`
+	DailyNoteDir         string `yaml:"daily_note_dir"`
+	Inbox                string `yaml:"inbox_dir"`
+	Editor               string `yaml:"editor"`
+	WithAlwaysOpenEditor bool   `yaml:"with_always_open_editor"` // trueなら常にエディタを開く
 }
 
 var defaultConfig = Config{
-	BaseDir:      "./notes",
-	DailyNoteDir: "daily",
-	Inbox:        "inbox", // デフォルトのInboxディレクトリ
-	Editor:       "vim",   // デフォルトのエディタ
+	BaseDir:              "./notes",
+	DailyNoteDir:         "daily",
+	Inbox:                "inbox", // デフォルトのInboxディレクトリ
+	Editor:               "vim",   // デフォルトのエディタ
+	WithAlwaysOpenEditor: false,   // デフォルトでは常にエディタを開かない
 }
 
 type ConfigPaths struct {
@@ -74,9 +76,13 @@ func LoadConfig() (Config, error) {
 		// ローカル設定ファイルが存在しない場合はグローバル設定をそのまま返す
 		return globalConfig, nil
 	}
+
+	// まずデフォルト設定とグローバル設定をマージ
+	mergedGlobalConfig := MergeConfig(defaultConfig, globalConfig)
+
 	// グローバル設定とローカル設定をマージ
-	mergedConfig := MergeConfig(globalConfig, localConfig)
-	return mergedConfig, nil
+	fixedConfig := MergeConfig(mergedGlobalConfig, localConfig)
+	return fixedConfig, nil
 }
 
 func loadConfig(path string) (Config, error) {
@@ -115,6 +121,11 @@ func GetDefaultConfig() Config {
 	return defaultConfig
 }
 
+// MergeConfig はグローバル設定とローカル設定をマージします。
+// ローカル設定の非ゼロ値でグローバル設定を上書きします。
+// もしマージに失敗した場合はグローバル設定をそのまま返します。
+// グローバル設定を基本として､ローカル設定で設定されている値で上書きします｡
+// 例えば、ローカル設定でエディタが指定されていれば、グローバル設定のエディタを上書きします。
 func MergeConfig(global, local Config) Config {
 	// localの非ゼロ値でhomeを上書き
 	if err := mergo.Merge(&local, global); err != nil {
