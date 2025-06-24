@@ -38,3 +38,6 @@ bin/
 # krapp/notes and config test artifacts
 notes/
 config/test_config.yaml
+
+# Claude Code session files
+.claude/
