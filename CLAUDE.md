@@ -96,6 +96,13 @@ All create commands support `-e/--edit` flag to open in editor after creation.
 
 ## Development Guidelines
 
+### Architecture
+- **Follow Clean Architecture principles**
+- Dependencies flow inward: cmd → usecase → models
+- Business logic resides in the usecase layer
+- Models contain core entities and business rules
+- External dependencies (CLI, file system) are kept in outer layers
+
 ### Testing
 - **Always write tests** for new functions and modifications
 - Use table-driven tests where appropriate
