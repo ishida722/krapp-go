@@ -118,7 +118,5 @@ All create commands support `-e/--edit` flag to open in editor after creation.
 
 ### Development Workflow
 - **Always create a new branch** when implementing from an issue
-- **Make commits with appropriate granularity** - each commit should represent a logical unit of work
 - **Create a Pull Request** at the end of the implementation
 - Branch naming convention: Use descriptive names like `feature/issue-123-add-new-command` or `fix/issue-456-config-bug`
-- Commit messages should be clear and descriptive of the changes made
