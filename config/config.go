@@ -14,6 +14,7 @@ type Config struct {
 	Inbox                string `yaml:"inbox_dir"`
 	Editor               string `yaml:"editor"`
 	WithAlwaysOpenEditor bool   `yaml:"with_always_open_editor"` // trueなら常にエディタを開く
+	EditorOption         string `yaml:"editor_option"`           // エディタのオプション
 }
 
 var defaultConfig = Config{
@@ -22,6 +23,7 @@ var defaultConfig = Config{
 	Inbox:                "inbox", // デフォルトのInboxディレクトリ
 	Editor:               "vim",   // デフォルトのエディタ
 	WithAlwaysOpenEditor: false,   // デフォルトでは常にエディタを開かない
+	EditorOption:         "",      // デフォルトのエディタオプション
 }
 
 type ConfigPaths struct {
