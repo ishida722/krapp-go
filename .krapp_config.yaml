@@ -3,3 +3,4 @@ daily_note_dir: "daily"
 inbox_dir: "inbox"
 editor: "code"
 editor_option: ""
+with_always_open_editor: false

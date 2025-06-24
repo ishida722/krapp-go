@@ -8,15 +8,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func setup_config_file(t *testing.T) string {
+func setupConfigFile(t *testing.T) string {
 	tempDir := t.TempDir()
-	cfgGlobal := GetDefaultConfig()
-	cfgGlobal.BaseDir = tempDir
+	cfgDefault := GetDefaultConfig()
+	cfgDefault.BaseDir = tempDir
+	cfgGlobal := cfgDefault
 	cfgLocal := cfgGlobal
 	// エディタだけローカル設定を変更
 	cfgLocal.Editor = "nvim"
+	// editorerのオプションも設定
+	cfgGlobal.EditorOption = "-c"
 	SetConfigPaths(ConfigPaths{
-		Global: filepath.Join(tempDir, ".krapp_config.yaml"),
+		Global: filepath.Join(tempDir, ".krapp_config_global.yaml"),
 		Local:  filepath.Join(tempDir, ".krapp_config_local.yaml"),
 	})
 	cfgPaths, _ := GetConfigPaths()
@@ -89,7 +92,7 @@ func TestMergeConfig(t *testing.T) {
 }
 
 func TestLoadMergedConfig(t *testing.T) {
-	tempDir := setup_config_file(t)
+	tempDir := setupConfigFile(t)
 
 	cfg, err := LoadConfig()
 	assert.NoError(t, err, "LoadConfig should not return an error")
@@ -97,4 +100,12 @@ func TestLoadMergedConfig(t *testing.T) {
 	assert.Equal(t, cfg.DailyNoteDir, "daily", "DailyNoteDir should match default value")
 	assert.Equal(t, cfg.Inbox, "inbox", "Inbox should match default value")
 	assert.Equal(t, cfg.Editor, "nvim", "Editor should be overridden by local config")
+
+	t.Cleanup(func() {
+		// テスト後に設定ファイルを削除
+		os.Remove(filepath.Join(tempDir, ".krapp_config_global.yaml"))
+		os.Remove(filepath.Join(tempDir, ".krapp_config_local.yaml"))
+		// 設定パスをリセット
+		ResetConfigPaths()
+	})
 }

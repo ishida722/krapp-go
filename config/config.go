@@ -31,10 +31,17 @@ type ConfigPaths struct {
 	Local  string // ローカル設定ファイルのパス
 }
 
-var configPaths = ConfigPaths{
-	Global: filepath.Join(os.Getenv("HOME"), ".krapp_config.yaml"),
-	Local:  ".krapp_config.yaml",
+var defaultConfigPaths = ConfigPaths{
+	Global: filepath.Join(os.Getenv("HOME"), ".krapp_config_global.yaml"),
+	Local:  ".krapp_config_local.yaml",
 }
+
+func GetDefaultConfigPaths() ConfigPaths {
+	// デフォルトの設定ファイルパスを返す
+	return defaultConfigPaths
+}
+
+var configPaths = GetDefaultConfigPaths()
 
 func GetConfigPaths() (ConfigPaths, error) {
 	return configPaths, nil
@@ -42,6 +49,11 @@ func GetConfigPaths() (ConfigPaths, error) {
 
 func SetConfigPaths(paths ConfigPaths) {
 	configPaths = paths
+}
+
+func ResetConfigPaths() {
+	// 設定ファイルのパスをデフォルトにリセット
+	configPaths = GetDefaultConfigPaths()
 }
 
 func makeHomeConfig() error {
