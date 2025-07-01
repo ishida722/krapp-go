@@ -9,12 +9,14 @@ import (
 )
 
 type Config struct {
-	BaseDir              string `yaml:"base_dir"`
-	DailyNoteDir         string `yaml:"daily_note_dir"`
-	Inbox                string `yaml:"inbox_dir"`
-	Editor               string `yaml:"editor"`
-	WithAlwaysOpenEditor bool   `yaml:"with_always_open_editor"` // trueなら常にエディタを開く
-	EditorOption         string `yaml:"editor_option"`           // エディタのオプション
+	BaseDir              string         `yaml:"base_dir"`
+	DailyNoteDir         string         `yaml:"daily_note_dir"`
+	Inbox                string         `yaml:"inbox_dir"`
+	Editor               string         `yaml:"editor"`
+	WithAlwaysOpenEditor bool           `yaml:"with_always_open_editor"` // trueなら常にエディタを開く
+	EditorOption         string         `yaml:"editor_option"`           // エディタのオプション
+	DailyTemplate        map[string]any `yaml:"daily_template"`          // デイリーノート用テンプレート
+	InboxTemplate        map[string]any `yaml:"inbox_template"`          // インボックスノート用テンプレート
 }
 
 var defaultConfig = Config{
@@ -24,6 +26,13 @@ var defaultConfig = Config{
 	Editor:               "vim",   // デフォルトのエディタ
 	WithAlwaysOpenEditor: false,   // デフォルトでは常にエディタを開かない
 	EditorOption:         "",      // デフォルトのエディタオプション
+	DailyTemplate: map[string]any{
+		"tags": []string{},
+	},
+	InboxTemplate: map[string]any{
+		"tags":   []string{},
+		"status": "new",
+	},
 }
 
 type ConfigPaths struct {

@@ -23,6 +23,13 @@ type NewNote struct {
 	Now       bool
 }
 
+type NewNoteWithFrontMatter struct {
+	Content     string
+	FilePath    string
+	WriteFile   bool
+	FrontMatter FrontMatter
+}
+
 func CreateNewNote(newNote NewNote) (*Note, error) {
 	fm := FrontMatter{}
 	if newNote.Now {
@@ -41,6 +48,25 @@ func CreateNewNote(newNote NewNote) (*Note, error) {
 			return note, fmt.Errorf("failed to save note to file: %w", err)
 		}
 	}
+	return note, nil
+}
+
+func CreateNewNoteWithFrontMatter(newNote NewNoteWithFrontMatter) (*Note, error) {
+	note := &Note{
+		FrontMatter: newNote.FrontMatter,
+		Content:     strings.TrimSpace(newNote.Content),
+		FilePath:    newNote.FilePath,
+	}
+
+	if newNote.WriteFile {
+		if note.FilePath == "" {
+			return note, errors.New("note file path is empty")
+		}
+		if err := note.SaveToFile(); err != nil {
+			return note, fmt.Errorf("failed to save note to file: %w", err)
+		}
+	}
+
 	return note, nil
 }
 

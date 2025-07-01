@@ -12,9 +12,11 @@ var cfg config.Config
 
 type configAdapter struct{ *config.Config }
 
-func (c *configAdapter) GetBaseDir() string      { return c.BaseDir }
-func (c *configAdapter) GetDailyNoteDir() string { return c.DailyNoteDir }
-func (c *configAdapter) GetInboxDir() string     { return c.Inbox }
+func (c *configAdapter) GetBaseDir() string          { return c.BaseDir }
+func (c *configAdapter) GetDailyNoteDir() string     { return c.DailyNoteDir }
+func (c *configAdapter) GetInboxDir() string         { return c.Inbox }
+func (c *configAdapter) GetDailyTemplate() map[string]any { return c.DailyTemplate }
+func (c *configAdapter) GetInboxTemplate() map[string]any { return c.InboxTemplate }
 
 var rootCmd = &cobra.Command{
 	Use:     "krapp",
