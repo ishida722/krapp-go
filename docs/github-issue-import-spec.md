@@ -30,7 +30,7 @@ krapp ii  # エイリアス
 
 #### 2.2 オプション
 ```bash
-# 基本実行
+# 基本実行（ベースパスのremote originリポジトリのissueを取得）
 krapp import-issues
 
 # リポジトリを明示的に指定
@@ -42,6 +42,12 @@ krapp import-issues --dry-run
 # クローズせずにインポートのみ
 krapp import-issues --no-close
 ```
+
+#### 2.3 デフォルト動作
+- コマンド実行時、まずベースパス（設定の`base_dir`）でGitリポジトリの`remote origin`を確認
+- `git remote get-url origin`でリポジトリURLを取得し、GitHub URLの場合はそこからowner/repo形式を抽出
+- `--repo`オプション未指定時はこのリポジトリのissueを対象とする
+- ベースパスがGitリポジトリでない場合やremote originが設定されていない場合はエラー
 
 ### 3. 出力形式
 
@@ -112,7 +118,7 @@ type GitHubClient interface {
     ListOpenIssues(repo string) ([]Issue, error)
     GetIssueComments(repo string, issueNumber int) ([]Comment, error)
     CloseIssue(repo string, issueNumber int) error
-    GetCurrentRepo() (string, error)
+    GetCurrentRepo(baseDir string) (string, error)
 }
 
 // 実装（gh コマンドを使用）
@@ -120,9 +126,10 @@ type GHClient struct{}
 
 // テスト用モック実装
 type MockGitHubClient struct {
-    Issues   []Issue
-    Comments map[int][]Comment
+    Issues       []Issue
+    Comments     map[int][]Comment
     ClosedIssues []int
+    RepoURL      string  // テスト用のリポジトリURL
 }
 ```
 
@@ -168,9 +175,18 @@ type Milestone struct {
 ```go
 func ImportGitHubIssues(cfg InboxConfig, client GitHubClient, options ImportOptions) error {
     // 1. リポジトリ情報取得
-    repo, err := client.GetCurrentRepo()
-    if err != nil {
-        return fmt.Errorf("failed to get current repository: %w", err)
+    var repo string
+    var err error
+    
+    if options.Repo != "" {
+        // --repoオプション指定時はそれを使用
+        repo = options.Repo
+    } else {
+        // デフォルト: ベースディレクトリのremote originから取得
+        repo, err = client.GetCurrentRepo(cfg.GetBaseDir())
+        if err != nil {
+            return fmt.Errorf("failed to get current repository: %w", err)
+        }
     }
     
     // 2. オープンissue取得
@@ -252,25 +268,33 @@ func (c *GHClient) ListOpenIssues(repo string) ([]Issue, error) {
     return issues, nil
 }
 
-func (c *GHClient) GetCurrentRepo() (string, error) {
-    cmd := exec.Command("gh", "repo", "view", "--json", "owner,name")
+func (c *GHClient) GetCurrentRepo(baseDir string) (string, error) {
+    // ベースディレクトリでgit remote originを確認
+    cmd := exec.Command("git", "remote", "get-url", "origin")
+    cmd.Dir = baseDir
     output, err := cmd.Output()
     if err != nil {
-        return "", fmt.Errorf("failed to get current repo: %w", err)
+        return "", fmt.Errorf("failed to get remote origin: %w", err)
     }
     
-    var repo struct {
-        Owner struct {
-            Login string `json:"login"`
-        } `json:"owner"`
-        Name string `json:"name"`
+    // GitHub URLからowner/repo形式を抽出
+    url := strings.TrimSpace(string(output))
+    
+    // HTTPS形式: https://github.com/owner/repo.git
+    if strings.HasPrefix(url, "https://github.com/") {
+        url = strings.TrimPrefix(url, "https://github.com/")
+        url = strings.TrimSuffix(url, ".git")
+        return url, nil
     }
     
-    if err := json.Unmarshal(output, &repo); err != nil {
-        return "", fmt.Errorf("failed to parse repo info: %w", err)
+    // SSH形式: git@github.com:owner/repo.git
+    if strings.HasPrefix(url, "git@github.com:") {
+        url = strings.TrimPrefix(url, "git@github.com:")
+        url = strings.TrimSuffix(url, ".git")
+        return url, nil
     }
     
-    return fmt.Sprintf("%s/%s", repo.Owner.Login, repo.Name), nil
+    return "", fmt.Errorf("not a GitHub repository: %s", url)
 }
 ```
 
@@ -345,17 +369,23 @@ func TestImportGitHubIssues(t *testing.T) {
 ```
 
 #### 7.2 統合テスト
-- `gh` コマンドが利用可能な環境でのエンドツーエンドテスト
-- テスト用リポジトリでの実際のissue操作テスト
+- モッククライアントを使用した統合テスト（実際のGitHub APIは呼ばない）
+- `gh` コマンドの実行可能性チェック（コマンド存在確認のみ）
+- GitリポジトリのURL解析テスト（ローカルの`.git`ディレクトリ使用）
+
+**注意**: GitHub APIを実際に呼び出すe2eテストは実装しない（GitHubリポジトリへの影響を避けるため）
 
 ### 8. エラーハンドリング
 
 #### 8.1 想定エラーケース
 - `gh` コマンドが見つからない
-- GitHub認証エラー
+- GitHub認証エラー（`gh auth status`で確認可能）
 - リポジトリアクセス権限エラー
 - ネットワークエラー
 - ファイル書き込みエラー
+- ベースディレクトリがGitリポジトリでない
+- remote originが設定されていない
+- remote originがGitHubリポジトリでない
 
 #### 8.2 エラー対応
 - 各エラーケースで適切なエラーメッセージを表示
