@@ -41,3 +41,4 @@ config/test_config.yaml
 
 # Claude Code session files
 .claude/
+krapp
