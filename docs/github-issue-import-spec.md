@@ -61,7 +61,7 @@ notes/inbox/YYYY-MM-DD-issue-{issue_number}-{sanitized_title}.md
 #### 3.2 マークダウン構造
 ```markdown
 ---
-created: 2024-01-15T10:30:00Z
+created: 2024-01-10T09:00:00Z
 tags: [github-issue, imported]
 status: imported
 issue_number: 123
@@ -70,7 +70,7 @@ assignees: [user1, user2]
 labels: [bug, priority-high]
 milestone: v1.2.0
 state: closed
-original_created: 2024-01-10T09:00:00Z
+imported_at: 2024-01-15T10:30:00Z
 original_updated: 2024-01-15T10:30:00Z
 ---
 
@@ -220,7 +220,7 @@ func processIssue(cfg InboxConfig, client GitHubClient, repo string, issue Issue
     filename := generateIssueFilename(issue)
     filePath := filepath.Join(cfg.GetInboxDir(), filename)
     
-    // 4. frontmatter作成
+    // 4. frontmatter作成（issueの作成日時をcreatedに設定）
     fm := createIssueFrontMatter(issue)
     
     // 5. ノート保存
