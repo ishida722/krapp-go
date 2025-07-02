@@ -14,7 +14,9 @@ type configAdapter struct{ *config.Config }
 
 func (c *configAdapter) GetBaseDir() string          { return c.BaseDir }
 func (c *configAdapter) GetDailyNoteDir() string     { return c.DailyNoteDir }
-func (c *configAdapter) GetInboxDir() string         { return c.Inbox }
+func (c *configAdapter) GetInboxDir() string         { 
+	return c.Inbox
+}
 func (c *configAdapter) GetDailyTemplate() map[string]any { return c.DailyTemplate }
 func (c *configAdapter) GetInboxTemplate() map[string]any { return c.InboxTemplate }
 
@@ -40,10 +42,15 @@ func Execute() error {
 	rootCmd.AddCommand(createInboxCmd())
 	rootCmd.AddCommand(syncCmd())
 	rootCmd.AddCommand(importCmd())
+	rootCmd.AddCommand(importIssuesCmd())
 
 	return rootCmd.Execute()
 }
 
 func getConfig() config.Config {
 	return cfg
+}
+
+func getConfigAdapter() *configAdapter {
+	return &configAdapter{&cfg}
 }
