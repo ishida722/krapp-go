@@ -44,10 +44,10 @@ type ConfigPaths struct {
 func getXDGConfigPath() string {
 	// Check XDG_CONFIG_HOME first
 	if xdgConfigHome := os.Getenv("XDG_CONFIG_HOME"); xdgConfigHome != "" {
-		return filepath.Join(xdgConfigHome, "krapp", ".krapp_config.yaml")
+		return filepath.Join(xdgConfigHome, "krapp", "config.yaml")
 	}
-	// Fall back to ~/.config/krapp/.krapp_config.yaml
-	return filepath.Join(os.Getenv("HOME"), ".config", "krapp", ".krapp_config.yaml")
+	// Fall back to ~/.config/krapp/config.yaml
+	return filepath.Join(os.Getenv("HOME"), ".config", "krapp", "config.yaml")
 }
 
 var defaultConfigPaths = ConfigPaths{

@@ -59,14 +59,14 @@ go mod tidy
 
 The application uses a hierarchical configuration system:
 1. Default configuration (hardcoded)
-2. Global configuration (`~/.config/krapp/.krapp_config.yaml` or `$XDG_CONFIG_HOME/krapp/.krapp_config.yaml`)
+2. Global configuration (`~/.config/krapp/config.yaml` or `$XDG_CONFIG_HOME/krapp/config.yaml`)
 3. Local configuration (`./.krapp_config.yaml`)
 
 Local settings override global, which override defaults using the `mergo` library.
 
 The global configuration follows XDG Base Directory Specification:
-- Uses `$XDG_CONFIG_HOME/krapp/.krapp_config.yaml` if `XDG_CONFIG_HOME` is set
-- Falls back to `~/.config/krapp/.krapp_config.yaml` if `XDG_CONFIG_HOME` is not set
+- Uses `$XDG_CONFIG_HOME/krapp/config.yaml` if `XDG_CONFIG_HOME` is set
+- Falls back to `~/.config/krapp/config.yaml` if `XDG_CONFIG_HOME` is not set
 - Automatically migrates legacy config from `~/.krapp_config.yaml` on first run
 
 ### Note Structure

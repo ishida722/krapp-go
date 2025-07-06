@@ -19,7 +19,7 @@ func setupConfigFile(t *testing.T) string {
 	// editorerのオプションも設定
 	cfgGlobal.EditorOption = "-c"
 	SetConfigPaths(ConfigPaths{
-		Global: filepath.Join(tempDir, "config", "krapp", ".krapp_config.yaml"),
+		Global: filepath.Join(tempDir, "config", "krapp", "config.yaml"),
 		Local:  filepath.Join(tempDir, ".krapp_config.yaml"),
 	})
 	cfgPaths, _ := GetConfigPaths()
@@ -105,7 +105,7 @@ func TestLoadMergedConfig(t *testing.T) {
 
 	t.Cleanup(func() {
 		// テスト後に設定ファイルを削除
-		os.Remove(filepath.Join(tempDir, "config", "krapp", ".krapp_config.yaml"))
+		os.Remove(filepath.Join(tempDir, "config", "krapp", "config.yaml"))
 		os.Remove(filepath.Join(tempDir, ".krapp_config.yaml"))
 		// 設定パスをリセット
 		ResetConfigPaths()
@@ -126,20 +126,20 @@ func TestXDGConfigPath(t *testing.T) {
 	os.Setenv("XDG_CONFIG_HOME", "/custom/config")
 	os.Setenv("HOME", "/home/user")
 	path := getXDGConfigPath()
-	assert.Equal(t, "/custom/config/krapp/.krapp_config.yaml", path)
+	assert.Equal(t, "/custom/config/krapp/config.yaml", path)
 
 	// Test without XDG_CONFIG_HOME
 	os.Unsetenv("XDG_CONFIG_HOME")
 	os.Setenv("HOME", "/home/user")
 	path = getXDGConfigPath()
-	assert.Equal(t, "/home/user/.config/krapp/.krapp_config.yaml", path)
+	assert.Equal(t, "/home/user/.config/krapp/config.yaml", path)
 }
 
 // TestMigrateLegacyConfig tests the legacy config migration
 func TestMigrateLegacyConfig(t *testing.T) {
 	tempDir := t.TempDir()
 	legacyPath := filepath.Join(tempDir, ".krapp_config.yaml")
-	newPath := filepath.Join(tempDir, ".config", "krapp", ".krapp_config.yaml")
+	newPath := filepath.Join(tempDir, ".config", "krapp", "config.yaml")
 
 	// Create legacy config
 	legacyConfig := Config{
