@@ -44,15 +44,15 @@ type ConfigPaths struct {
 func getXDGConfigPath() string {
 	// Check XDG_CONFIG_HOME first
 	if xdgConfigHome := os.Getenv("XDG_CONFIG_HOME"); xdgConfigHome != "" {
-		return filepath.Join(xdgConfigHome, "krapp", "config.yaml")
+		return filepath.Join(xdgConfigHome, "krapp", ".krapp_config.yaml")
 	}
-	// Fall back to ~/.config/krapp/config.yaml
-	return filepath.Join(os.Getenv("HOME"), ".config", "krapp", "config.yaml")
+	// Fall back to ~/.config/krapp/.krapp_config.yaml
+	return filepath.Join(os.Getenv("HOME"), ".config", "krapp", ".krapp_config.yaml")
 }
 
 var defaultConfigPaths = ConfigPaths{
 	Global: getXDGConfigPath(),
-	Local:  ".krapp_config_local.yaml",
+	Local:  ".krapp_config.yaml",
 }
 
 func GetDefaultConfigPaths() ConfigPaths {
@@ -78,7 +78,7 @@ func ResetConfigPaths() {
 // migrateLegacyConfig migrates old config file to new XDG-compliant location
 func migrateLegacyConfig() error {
 	// Check for legacy config file
-	legacyPath := filepath.Join(os.Getenv("HOME"), ".krapp_config_global.yaml")
+	legacyPath := filepath.Join(os.Getenv("HOME"), ".krapp_config.yaml")
 	if _, err := os.Stat(legacyPath); os.IsNotExist(err) {
 		// Legacy config doesn't exist, nothing to migrate
 		return nil
