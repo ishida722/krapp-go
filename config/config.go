@@ -40,8 +40,18 @@ type ConfigPaths struct {
 	Local  string // ローカル設定ファイルのパス
 }
 
+// getXDGConfigPath returns the XDG-compliant config path for global settings
+func getXDGConfigPath() string {
+	// Check XDG_CONFIG_HOME first
+	if xdgConfigHome := os.Getenv("XDG_CONFIG_HOME"); xdgConfigHome != "" {
+		return filepath.Join(xdgConfigHome, "krapp", "config.yaml")
+	}
+	// Fall back to ~/.config/krapp/config.yaml
+	return filepath.Join(os.Getenv("HOME"), ".config", "krapp", "config.yaml")
+}
+
 var defaultConfigPaths = ConfigPaths{
-	Global: filepath.Join(os.Getenv("HOME"), ".krapp_config_global.yaml"),
+	Global: getXDGConfigPath(),
 	Local:  ".krapp_config_local.yaml",
 }
 
@@ -65,7 +75,47 @@ func ResetConfigPaths() {
 	configPaths = GetDefaultConfigPaths()
 }
 
+// migrateLegacyConfig migrates old config file to new XDG-compliant location
+func migrateLegacyConfig() error {
+	// Check for legacy config file
+	legacyPath := filepath.Join(os.Getenv("HOME"), ".krapp_config_global.yaml")
+	if _, err := os.Stat(legacyPath); os.IsNotExist(err) {
+		// Legacy config doesn't exist, nothing to migrate
+		return nil
+	}
+	
+	// Load legacy config
+	legacyConfig, err := loadConfig(legacyPath)
+	if err != nil {
+		return err
+	}
+	
+	// Create new config directory
+	configDir := filepath.Dir(configPaths.Global)
+	if err := os.MkdirAll(configDir, 0755); err != nil {
+		return err
+	}
+	
+	// Save config to new location
+	if err := saveConfig(configPaths.Global, legacyConfig); err != nil {
+		return err
+	}
+	
+	// Remove legacy config file
+	if err := os.Remove(legacyPath); err != nil {
+		// Log warning but don't fail migration
+		// TODO: Add proper logging when available
+	}
+	
+	return nil
+}
+
 func makeHomeConfig() error {
+	// First, try to migrate legacy config if it exists
+	if err := migrateLegacyConfig(); err != nil {
+		return err
+	}
+	
 	// ファイルの情報を取得する,存在しない場合はエラーを返す
 	_, err := os.Stat(configPaths.Global)
 	// エラーが返ってこないので設定ファイルが存在する
@@ -77,6 +127,13 @@ func makeHomeConfig() error {
 	if !os.IsNotExist(err) {
 		return err // 存在しない以外のエラー
 	}
+	
+	// 設定ファイルが存在しない場合、ディレクトリを作成
+	configDir := filepath.Dir(configPaths.Global)
+	if err := os.MkdirAll(configDir, 0755); err != nil {
+		return err
+	}
+	
 	// ホームディレクトリに設定ファイルが存在しない場合はデフォルト設定を保存
 	return saveConfig(configPaths.Global, GetDefaultConfig())
 }

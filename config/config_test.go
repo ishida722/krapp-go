@@ -19,10 +19,12 @@ func setupConfigFile(t *testing.T) string {
 	// editorerのオプションも設定
 	cfgGlobal.EditorOption = "-c"
 	SetConfigPaths(ConfigPaths{
-		Global: filepath.Join(tempDir, ".krapp_config_global.yaml"),
+		Global: filepath.Join(tempDir, "config", "krapp", "config.yaml"),
 		Local:  filepath.Join(tempDir, ".krapp_config_local.yaml"),
 	})
 	cfgPaths, _ := GetConfigPaths()
+	// Create directory for global config
+	os.MkdirAll(filepath.Dir(cfgPaths.Global), 0755)
 	saveConfig(cfgPaths.Global, cfgGlobal)
 	saveConfig(cfgPaths.Local, cfgLocal)
 	return tempDir
@@ -103,9 +105,79 @@ func TestLoadMergedConfig(t *testing.T) {
 
 	t.Cleanup(func() {
 		// テスト後に設定ファイルを削除
-		os.Remove(filepath.Join(tempDir, ".krapp_config_global.yaml"))
+		os.Remove(filepath.Join(tempDir, "config", "krapp", "config.yaml"))
 		os.Remove(filepath.Join(tempDir, ".krapp_config_local.yaml"))
 		// 設定パスをリセット
 		ResetConfigPaths()
 	})
+}
+
+// TestXDGConfigPath tests the XDG config path generation
+func TestXDGConfigPath(t *testing.T) {
+	// Test with XDG_CONFIG_HOME set
+	originalXDGHome := os.Getenv("XDG_CONFIG_HOME")
+	originalHome := os.Getenv("HOME")
+	defer func() {
+		os.Setenv("XDG_CONFIG_HOME", originalXDGHome)
+		os.Setenv("HOME", originalHome)
+	}()
+
+	// Test with XDG_CONFIG_HOME
+	os.Setenv("XDG_CONFIG_HOME", "/custom/config")
+	os.Setenv("HOME", "/home/user")
+	path := getXDGConfigPath()
+	assert.Equal(t, "/custom/config/krapp/config.yaml", path)
+
+	// Test without XDG_CONFIG_HOME
+	os.Unsetenv("XDG_CONFIG_HOME")
+	os.Setenv("HOME", "/home/user")
+	path = getXDGConfigPath()
+	assert.Equal(t, "/home/user/.config/krapp/config.yaml", path)
+}
+
+// TestMigrateLegacyConfig tests the legacy config migration
+func TestMigrateLegacyConfig(t *testing.T) {
+	tempDir := t.TempDir()
+	legacyPath := filepath.Join(tempDir, ".krapp_config_global.yaml")
+	newPath := filepath.Join(tempDir, ".config", "krapp", "config.yaml")
+
+	// Create legacy config
+	legacyConfig := Config{
+		BaseDir: "/legacy/base",
+		Editor:  "legacy-editor",
+	}
+	err := saveConfig(legacyPath, legacyConfig)
+	assert.NoError(t, err)
+
+	// Set paths to use temp directory
+	originalHome := os.Getenv("HOME")
+	os.Setenv("HOME", tempDir)
+	defer os.Setenv("HOME", originalHome)
+
+	// Reset config paths to use new HOME
+	ResetConfigPaths()
+
+	// Set the config paths to use the temp directory
+	SetConfigPaths(ConfigPaths{
+		Global: newPath,
+		Local:  filepath.Join(tempDir, ".krapp_config_local.yaml"),
+	})
+
+	// Run migration
+	err = migrateLegacyConfig()
+	assert.NoError(t, err)
+
+	// Check that new config exists
+	_, err = os.Stat(newPath)
+	assert.NoError(t, err, "New config should exist")
+
+	// Check that legacy config is removed
+	_, err = os.Stat(legacyPath)
+	assert.True(t, os.IsNotExist(err), "Legacy config should be removed")
+
+	// Check that config content is preserved
+	migratedConfig, err := loadConfig(newPath)
+	assert.NoError(t, err)
+	assert.Equal(t, legacyConfig.BaseDir, migratedConfig.BaseDir)
+	assert.Equal(t, legacyConfig.Editor, migratedConfig.Editor)
 }
