@@ -25,6 +25,13 @@ func CreateDailyNote(cfg Config, now time.Time) (string, error) {
 		return "", fmt.Errorf("ディレクトリ作成に失敗: %w", err)
 	}
 
+	filePath := filepath.Join(dir, date+".md")
+	
+	// 既存のファイルがある場合は、そのパスを返す
+	if _, err := os.Stat(filePath); err == nil {
+		return filePath, nil
+	}
+
 	// テンプレートから初期frontmatterを作成
 	fm := models.FrontMatter{}
 
@@ -40,7 +47,7 @@ func CreateDailyNote(cfg Config, now time.Time) (string, error) {
 
 	note, err := models.CreateNewNoteWithFrontMatter(models.NewNoteWithFrontMatter{
 		Content:     "",
-		FilePath:    filepath.Join(dir, date+".md"),
+		FilePath:    filePath,
 		WriteFile:   true,
 		FrontMatter: fm,
 	})
