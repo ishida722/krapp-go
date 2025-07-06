@@ -1,0 +1,6 @@
+daily_template:
+  tags: ["work", "daily"]
+  status: "active"
+inbox_template:
+  tags: ["inbox"]
+  priority: "normal"

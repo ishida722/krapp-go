@@ -59,10 +59,15 @@ go mod tidy
 
 The application uses a hierarchical configuration system:
 1. Default configuration (hardcoded)
-2. Global configuration (`~/.krapp_config.yaml`)
+2. Global configuration (`~/.config/krapp/config.yaml` or `$XDG_CONFIG_HOME/krapp/config.yaml`)
 3. Local configuration (`./.krapp_config.yaml`)
 
 Local settings override global, which override defaults using the `mergo` library.
+
+The global configuration follows XDG Base Directory Specification:
+- Uses `$XDG_CONFIG_HOME/krapp/config.yaml` if `XDG_CONFIG_HOME` is set
+- Falls back to `~/.config/krapp/config.yaml` if `XDG_CONFIG_HOME` is not set
+- Automatically migrates legacy config from `~/.krapp_config.yaml` on first run
 
 ### Note Structure
 
@@ -82,6 +87,7 @@ Notes are Markdown files with optional YAML frontmatter:
 - `krapp config`: Print current configuration as YAML
 - `krapp sync`: Sync notes using Git
 - `krapp import-notes [dir]` (alias: `in`): Import notes from directory
+- `krapp import-issues`: Import GitHub issues as notes
 
 All create commands support `-e/--edit` flag to open in editor after creation.
 
