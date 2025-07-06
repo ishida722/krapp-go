@@ -14,8 +14,8 @@ type testDailyConfig struct {
 	dailyTemplate map[string]any
 }
 
-func (c *testDailyConfig) GetBaseDir() string            { return c.baseDir }
-func (c *testDailyConfig) GetDailyNoteDir() string       { return c.dailyNoteDir }
+func (c *testDailyConfig) GetBaseDir() string               { return c.baseDir }
+func (c *testDailyConfig) GetDailyNoteDir() string          { return c.dailyNoteDir }
 func (c *testDailyConfig) GetDailyTemplate() map[string]any { return c.dailyTemplate }
 
 func TestCreateDailyNote(t *testing.T) {
@@ -53,19 +53,19 @@ func TestCreateDailyNoteWithTemplate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	
+
 	// ファイルが作成されたことを確認
 	expectedFile := filepath.Join(tmpDir, "daily", "2025", "06", "2025-06-02.md")
 	if path != expectedFile {
 		t.Errorf("expected path %s, got %s", expectedFile, path)
 	}
-	
+
 	// ファイル内容を確認
 	content, err := os.ReadFile(expectedFile)
 	if err != nil {
 		t.Fatalf("failed to read file: %v", err)
 	}
-	
+
 	contentStr := string(content)
 	if !strings.Contains(contentStr, `created: "2025-06-02"`) {
 		t.Errorf("created field not found in frontmatter")

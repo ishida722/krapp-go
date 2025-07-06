@@ -11,7 +11,6 @@ import (
 	"github.com/ishida722/krapp-go/models"
 )
 
-
 // ImportGitHubIssues imports GitHub issues as inbox notes
 func ImportGitHubIssues(cfg InboxConfig, client GitHubClient, options ImportOptions) error {
 	// 1. リポジトリ情報取得
@@ -102,15 +101,15 @@ func processIssue(cfg InboxConfig, client GitHubClient, repo string, issue Issue
 func generateIssueFilename(issue Issue) string {
 	// 日付をYYYY-MM-DD形式で取得
 	date := issue.CreatedAt.Format("2006-01-02")
-	
+
 	// タイトルをサニタイズ（ファイル名に使用できない文字を除去）
 	sanitizedTitle := sanitizeFilename(issue.Title)
-	
+
 	// 長すぎる場合は切り詰め
 	if len(sanitizedTitle) > 50 {
 		sanitizedTitle = sanitizedTitle[:50]
 	}
-	
+
 	return fmt.Sprintf("%s-issue-%d-%s.md", date, issue.Number, sanitizedTitle)
 }
 
@@ -118,28 +117,28 @@ func generateIssueFilename(issue Issue) string {
 func sanitizeFilename(filename string) string {
 	// 小文字に変換
 	filename = strings.ToLower(filename)
-	
+
 	// 英数字とハイフン、アンダースコア以外を削除
 	reg := regexp.MustCompile(`[^a-z0-9\-_]`)
 	filename = reg.ReplaceAllString(filename, "-")
-	
+
 	// 連続するハイフンを一つにまとめる
 	reg = regexp.MustCompile(`-+`)
 	filename = reg.ReplaceAllString(filename, "-")
-	
+
 	// 先頭と末尾のハイフンを削除
 	filename = strings.Trim(filename, "-")
-	
+
 	return filename
 }
 
 // createIssueFrontMatter creates frontmatter for the issue
 func createIssueFrontMatter(issue Issue) models.FrontMatter {
 	fm := models.FrontMatter{}
-	
+
 	// issueの作成日時をcreatedに設定
 	fm.SetCreated(issue.CreatedAt)
-	
+
 	// 基本情報
 	fm["tags"] = []string{"github-issue", "imported"}
 	fm["status"] = "imported"
@@ -148,7 +147,7 @@ func createIssueFrontMatter(issue Issue) models.FrontMatter {
 	fm["state"] = issue.State
 	fm["imported_at"] = time.Now().Format(time.RFC3339)
 	fm["original_updated"] = issue.UpdatedAt.Format(time.RFC3339)
-	
+
 	// 担当者
 	if len(issue.Assignees) > 0 {
 		assignees := make([]string, len(issue.Assignees))
@@ -157,7 +156,7 @@ func createIssueFrontMatter(issue Issue) models.FrontMatter {
 		}
 		fm["assignees"] = assignees
 	}
-	
+
 	// ラベル
 	if len(issue.Labels) > 0 {
 		labels := make([]string, len(issue.Labels))
@@ -166,26 +165,26 @@ func createIssueFrontMatter(issue Issue) models.FrontMatter {
 		}
 		fm["labels"] = labels
 	}
-	
+
 	// マイルストーン
 	if issue.Milestone.Title != "" {
 		fm["milestone"] = issue.Milestone.Title
 	}
-	
+
 	return fm
 }
 
 // generateIssueMarkdown generates markdown content for the issue
 func generateIssueMarkdown(issue Issue, comments []Comment) string {
 	var builder strings.Builder
-	
+
 	// タイトル
 	builder.WriteString(fmt.Sprintf("# Issue #%d: %s\n\n", issue.Number, issue.Title))
-	
+
 	// メタ情報
-	builder.WriteString(fmt.Sprintf("**Created by:** @%s on %s\n", 
+	builder.WriteString(fmt.Sprintf("**Created by:** @%s on %s\n",
 		issue.Author.Login, issue.CreatedAt.Format("2006-01-02")))
-	
+
 	if len(issue.Labels) > 0 {
 		labels := make([]string, len(issue.Labels))
 		for i, label := range issue.Labels {
@@ -193,7 +192,7 @@ func generateIssueMarkdown(issue Issue, comments []Comment) string {
 		}
 		builder.WriteString(fmt.Sprintf("**Labels:** %s\n", strings.Join(labels, ", ")))
 	}
-	
+
 	if len(issue.Assignees) > 0 {
 		assignees := make([]string, len(issue.Assignees))
 		for i, assignee := range issue.Assignees {
@@ -201,35 +200,35 @@ func generateIssueMarkdown(issue Issue, comments []Comment) string {
 		}
 		builder.WriteString(fmt.Sprintf("**Assignees:** %s\n", strings.Join(assignees, ", ")))
 	}
-	
+
 	if issue.Milestone.Title != "" {
 		builder.WriteString(fmt.Sprintf("**Milestone:** %s\n", issue.Milestone.Title))
 	}
-	
+
 	builder.WriteString("\n")
-	
+
 	// 本文
 	if issue.Body != "" {
 		builder.WriteString("## Description\n\n")
 		builder.WriteString(issue.Body)
 		builder.WriteString("\n\n")
 	}
-	
+
 	// コメント
 	if len(comments) > 0 {
 		builder.WriteString("## Comments\n\n")
 		for _, comment := range comments {
-			builder.WriteString(fmt.Sprintf("### Comment by @%s on %s\n\n", 
+			builder.WriteString(fmt.Sprintf("### Comment by @%s on %s\n\n",
 				comment.Author.Login, comment.CreatedAt.Format("2006-01-02")))
 			builder.WriteString(comment.Body)
 			builder.WriteString("\n\n")
 		}
 	}
-	
+
 	// フッター
 	builder.WriteString("---\n")
-	builder.WriteString(fmt.Sprintf("*Issue automatically imported and closed by krapp on %s*\n", 
+	builder.WriteString(fmt.Sprintf("*Issue automatically imported and closed by krapp on %s*\n",
 		time.Now().Format(time.RFC3339)))
-	
+
 	return builder.String()
 }

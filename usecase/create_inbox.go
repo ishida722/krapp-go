@@ -26,10 +26,10 @@ func CreateInboxNote(cfg InboxConfig, now time.Time, title string) (string, erro
 
 	// テンプレートから初期frontmatterを作成
 	fm := models.FrontMatter{}
-	
+
 	// 作成日時を設定
 	fm.SetCreated(now)
-	
+
 	// テンプレートの属性を追加
 	if cfg.GetInboxTemplate() != nil {
 		for key, value := range cfg.GetInboxTemplate() {

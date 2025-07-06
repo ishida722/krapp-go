@@ -14,8 +14,8 @@ type testInboxConfig struct {
 	inboxTemplate map[string]any
 }
 
-func (c *testInboxConfig) GetBaseDir() string            { return c.baseDir }
-func (c *testInboxConfig) GetInboxDir() string           { return c.inboxDir }
+func (c *testInboxConfig) GetBaseDir() string               { return c.baseDir }
+func (c *testInboxConfig) GetInboxDir() string              { return c.inboxDir }
 func (c *testInboxConfig) GetInboxTemplate() map[string]any { return c.inboxTemplate }
 
 func TestCreateInboxNote(t *testing.T) {
@@ -56,19 +56,19 @@ func TestCreateInboxNoteWithTemplate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	
+
 	// ファイルが作成されたことを確認
 	expectedFile := filepath.Join(tmpDir, "inbox", "2025-06-02-test-title.md")
 	if path != expectedFile {
 		t.Errorf("expected path %s, got %s", expectedFile, path)
 	}
-	
+
 	// ファイル内容を確認
 	content, err := os.ReadFile(expectedFile)
 	if err != nil {
 		t.Fatalf("failed to read file: %v", err)
 	}
-	
+
 	contentStr := string(content)
 	if !strings.Contains(contentStr, `created: "2025-06-02"`) {
 		t.Errorf("created field not found in frontmatter")

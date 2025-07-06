@@ -181,3 +181,106 @@ func TestMigrateLegacyConfig(t *testing.T) {
 	assert.Equal(t, legacyConfig.BaseDir, migratedConfig.BaseDir)
 	assert.Equal(t, legacyConfig.Editor, migratedConfig.Editor)
 }
+
+// TestExpandHomePath tests the home directory expansion function
+func TestExpandHomePath(t *testing.T) {
+	originalHome := os.Getenv("HOME")
+	defer os.Setenv("HOME", originalHome)
+
+	testHome := "/test/home"
+	os.Setenv("HOME", testHome)
+
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "Empty path",
+			input:    "",
+			expected: "",
+		},
+		{
+			name:     "Just tilde",
+			input:    "~",
+			expected: testHome,
+		},
+		{
+			name:     "Tilde with path",
+			input:    "~/documents",
+			expected: filepath.Join(testHome, "documents"),
+		},
+		{
+			name:     "Tilde with nested path",
+			input:    "~/notes/daily",
+			expected: filepath.Join(testHome, "notes", "daily"),
+		},
+		{
+			name:     "Absolute path without tilde",
+			input:    "/absolute/path",
+			expected: "/absolute/path",
+		},
+		{
+			name:     "Relative path without tilde",
+			input:    "relative/path",
+			expected: "relative/path",
+		},
+		{
+			name:     "Path with tilde in middle",
+			input:    "/path/~/middle",
+			expected: "/path/~/middle",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := expandHomePath(tt.input)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+// TestLoadConfigWithHomeExpansion tests that BaseDir with ~ is expanded
+func TestLoadConfigWithHomeExpansion(t *testing.T) {
+	tempDir := t.TempDir()
+	originalHome := os.Getenv("HOME")
+	defer os.Setenv("HOME", originalHome)
+
+	testHome := "/test/home"
+	os.Setenv("HOME", testHome)
+
+	// Create config with ~ in BaseDir
+	cfg := Config{
+		BaseDir:      "~/notes",
+		DailyNoteDir: "daily",
+		Inbox:        "inbox",
+		Editor:       "vim",
+	}
+
+	configPath := filepath.Join(tempDir, "config.yaml")
+	err := saveConfig(configPath, cfg)
+	assert.NoError(t, err)
+
+	// Set up config paths
+	SetConfigPaths(ConfigPaths{
+		Global: configPath,
+		Local:  filepath.Join(tempDir, ".krapp_config.yaml"),
+	})
+
+	// Load config
+	loadedConfig, err := LoadConfig()
+	assert.NoError(t, err)
+
+	// Verify that BaseDir was expanded
+	expectedBaseDir := filepath.Join(testHome, "notes")
+	assert.Equal(t, expectedBaseDir, loadedConfig.BaseDir)
+
+	// Verify other fields are unchanged
+	assert.Equal(t, cfg.DailyNoteDir, loadedConfig.DailyNoteDir)
+	assert.Equal(t, cfg.Inbox, loadedConfig.Inbox)
+	assert.Equal(t, cfg.Editor, loadedConfig.Editor)
+
+	t.Cleanup(func() {
+		ResetConfigPaths()
+	})
+}

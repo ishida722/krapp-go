@@ -27,10 +27,10 @@ func CreateDailyNote(cfg Config, now time.Time) (string, error) {
 
 	// テンプレートから初期frontmatterを作成
 	fm := models.FrontMatter{}
-	
+
 	// 作成日時を設定
 	fm.SetCreated(now)
-	
+
 	// テンプレートの属性を追加
 	if cfg.GetDailyTemplate() != nil {
 		for key, value := range cfg.GetDailyTemplate() {
