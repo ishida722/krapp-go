@@ -115,11 +115,9 @@ func generateIssueFilename(issue Issue) string {
 
 // sanitizeFilename removes characters that are not suitable for filenames
 func sanitizeFilename(filename string) string {
-	// 小文字に変換
-	filename = strings.ToLower(filename)
-
-	// 英数字とハイフン、アンダースコア以外を削除
-	reg := regexp.MustCompile(`[^a-z0-9\-_]`)
+	// ファイル名として使用できない文字のみを削除（日本語は保持）
+	// Windows/macOS/Linuxで使用できない文字: / \ : * ? " < > |
+	reg := regexp.MustCompile(`[/\\:*?"<>|]`)
 	filename = reg.ReplaceAllString(filename, "-")
 
 	// 連続するハイフンを一つにまとめる
