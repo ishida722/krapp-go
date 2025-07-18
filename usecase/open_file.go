@@ -16,7 +16,12 @@ func OpenFile(editorCommand, filePath, option string) error {
 		return fmt.Errorf("エディタが指定されていません")
 	}
 
-	cmd := exec.Command(editorCommand, filePath, option)
+	var cmd *exec.Cmd
+	if option != "" {
+		cmd = exec.Command(editorCommand, filePath, option)
+	} else {
+		cmd = exec.Command(editorCommand, filePath)
+	}
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
