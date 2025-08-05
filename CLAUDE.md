@@ -84,7 +84,7 @@ Notes are Markdown files with optional YAML frontmatter:
 
 - `krapp create-daily` (alias: `cd`): Create today's daily note
 - `krapp create-inbox "title"` (alias: `ci`): Create inbox note with title
-- `krapp config`: Print current configuration as YAML
+- `krapp config`: Print current configuration as YAML (also available as `krapp print-config`)
 - `krapp sync`: Sync notes using Git
 - `krapp import-notes [dir]` (alias: `in`): Import notes from directory
 - `krapp import-issues`: Import GitHub issues as notes
@@ -99,6 +99,8 @@ All create commands support `-e/--edit` flag to open in editor after creation.
 - `editor`: Command to open files (default: "vim")
 - `editor_option`: Additional options for editor
 - `with_always_open_editor`: Always open editor after note creation
+- `daily_template`: YAML template for daily notes frontmatter
+- `inbox_template`: YAML template for inbox notes frontmatter
 
 ## Development Guidelines
 
